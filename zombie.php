@@ -1,29 +1,53 @@
-<?php
-        
-  header("Content-type: text/csv");
-header("Content-Disposition: attachment; filename=file.csv");
-header("Pragma: no-cache");
-header("Expires: 0");
+<?
+printfile();
 
-    include_once('simplehtmldom/simple_html_dom.php');
 
+
+function printFile(){
     
-    //$url = 'https://www.zombiesrungame.com/kruemelnerd/178654/';
-
+   include_once('simplehtmldom/simple_html_dom.php');
 
     
     $url = $_GET['url'];
-
-    $complete_file = '<?xml version="1.0" encoding="UTF-8"?>';
-    $complete_file .= '<gpx version="1.1" creator="philippveit.de">';
-    $complete_file .= '  <trk>';
-    $complete_file .= '    <type>RUNNING</type>';
-    $complete_file .= '    <trkseg>';
+    // Create DOM from URL or file
+    $html = file_get_html($url);
 
 
+    $complete_file =  "<?xml version=\"1.0\" encoding=\"UTF-8\"?> \n";
+    $complete_file .=  "<gpx version=\"1.1\" creator=\"philippveit.de/zombie/\">\n";
+    $complete_file .=  "<trk>\n";
+    $complete_file .=  "<type>RUNNING</type>\n";
+    $complete_file .=  "<trkseg>\n";
+    
+    
+///////////////// Working with the file from the URL and writing everything in the complete_file variable
+    $complete_file .= doTheWork($url);
+
+    $complete_file .= "</trkseg>\n";
+    $complete_file .= "</trk>\n";
+    $complete_file .= "</gpx>\n";
 
 
 
+        header("Pragma: public", true);
+        header("Expires: 0"); // set expiration time
+        header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+        header("Content-Type: application/force-download");
+        header("Content-Type: application/octet-stream");
+        header("Content-Type: application/download");
+        header("Content-Disposition: attachment; filename=zombiesrun.gpx");
+        header("Pragma: no-cache");
+        header("Expires: 0");
+       
+
+    echo $complete_file; 
+}
+
+
+function doTheWork($url){
+    
+    
+    
     // Create DOM from URL or file
     $html = file_get_html($url);
 
@@ -121,33 +145,17 @@ header("Expires: 0");
                 //echo $time_at_this_point, '<br />';
                 
                 //2012-07-16T21:54:30+00:00
-                $one_line .=date("Y-m-dTH:i:s+00:00",$time_at_this_point);
+                //$one_line .=date("Y-m-dTH:i:s+00:00",$time_at_this_point);
+                $one_line .= date("c", $time_at_this_point);
                 $one_line .= '</time>';
                  $one_line .= '</trkpt>';
-                 $complete_file .= $one_line;
-                 //echo htmlentities($one_line),"<br />";
+                 $complete_file .= $one_line . "\n";
+
                  $one_line = "";
             }     
         
     }
-
-
-    $complete_file .= '    </trkseg>';
-    $complete_file .= '  </trk>';
-    $complete_file .= '</gpx>';
-   
+    return $complete_file;
     
-  //  $filename = "zombie.gpx";
-
-    //header("Cache-Control: cache, must-revalidate");
-    //header("Content-type: application/force-download");
-    //header('Content-Disposition: attachment; filename="zombie.txt"');
-    //header("Pragma: public");
-    //header("Content-type: application/octet-stream");
-    //header("Content-Disposition: attachment; filename=test.dat");
-
-
-    echo htmlentities($complete_file); 
-
-
+    }
 ?>
